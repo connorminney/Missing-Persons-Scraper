@@ -1,2 +1,2 @@
 # Missing-Persons-Scraper
-A script that uses to pull demographic information for victims in missing persons/cold cases from online databases.  
+Make sure you have chromedriver installed!!! This is script that is used to pull demographic information for victims in missing persons/cold cases from online databases (namus.gov and projectcoldcase.org). The goal is to make this information more accessible for anyone with an interest in applying data analytics/science to identify trends and prevent future disappearances. 
