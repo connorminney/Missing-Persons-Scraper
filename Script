@@ -1,0 +1,210 @@
+
+# imports
+from selenium import webdriver
+import pandas as pd
+import os
+from pathlib import Path
+
+
+#============================================================================================================================#
+''' Missing Persons webscraper '''
+#============================================================================================================================#
+
+download_path = str(os.path.join(Path.home(), "Downloads"))
+
+# Establish webdriver
+driver = webdriver.Chrome()
+driver.implicitly_wait(1)
+print('Driver open')
+
+# Create a dataframe to populate
+missing = pd.DataFrame()
+
+# Loop through web db
+for i in range(1,20):
+    try:
+        driver.get('https://www.namus.gov/MissingPersons/Case#/' + str(i))
+        
+        # Missing person number
+        mp_num = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[1]/div/span[1]').text
+        
+        # Name/Gender/Ethniticy
+        nge = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[1]/div/span[2]').text
+        nge = nge.split(",")
+        name = nge[0]
+        gender = nge[1]
+        ethnicity = nge[2]
+        
+        # Date of last contact 
+        dlc = driver.find_element_by_xpath('//html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[2]/div[1]').text[21:]
+        
+        # Missing from 
+        mf = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[2]/div[2]').text[13:]
+        
+        # Missing age
+        ma = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[2]/div[3]').text[12:]
+        
+        # Current age
+        ca = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/section/div/div/div/div/div[3]/div[2]/div[4]').text[12:]
+        
+        # NCMEC Number
+        ncmec = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[3]/div/div[2]/div[3]').text[13:]
+        
+        # Height
+        height = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[4]/div/div[2]/div[6]/div[1]').text[7:]
+        
+        # Weight
+        weight = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[4]/div/div[2]/div[6]/div[2]').text[7:]
+        
+        # Circumstances
+        circ = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[5]/div/div[4]/div[5]/div').text
+        
+        # Hair color
+        hc = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[1]/div').text[11:]
+        
+        # Head hair
+        hh = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[2]/div/span[2]').text
+        
+        # Body hair
+        bh = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[3]/div/span[2]').text
+        
+        # Left eye
+        le = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[5]/div[1]/span[2]').text
+        
+        # Right eye
+        re = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[5]/div[2]/span[2]').text        
+
+        # Both eyes
+        be = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/div[6]/div/span[2]').text
+        
+        # Features
+        features = []
+        for j in range(1, 10):
+            try:
+                item = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/no-known-information/div/div/no-information-entered/div/div/div/div[' + str(j + 1) + ']/div/div[1]').text                
+                desc = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[6]/div/div[2]/no-known-information/div/div/no-information-entered/div/div/div/div[' + str(j + 1) + ']/div/div[2]').text
+                feature = (item + ' - ' + desc)
+                features.append(feature)
+            except:
+                break
+            
+        # Clothing and accessories
+        ce = []
+        for k in range(1,10):
+            try:
+                item = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[8]/div/no-information-entered/div/div/div/div[' + str(k+1) + ']/div/div[1]').text
+                desc = driver.find_element_by_xpath('/html/body/div[1]/div[4]/div/div/section/div[1]/div[2]/div/div/section/div/div/article[1]/div/div[8]/div/no-information-entered/div/div/div/div[' + str(k+1) + ']/div/div[2]').text
+                full = (item + ' - ' + desc)
+                ce.append(full)
+            except:
+                break
+
+        print(mp_num, name, gender, ethnicity, dlc, mf, ma, ca, height, 
+              weight, circ, hc, hh, bh, le, re, be, features, ce)
+        
+        missing.loc[i, 'MP_Number'] = mp_num
+        missing.loc[i, 'Name'] = name
+        missing.loc[i, 'Gender'] = gender
+        missing.loc[i, 'Ethnicity'] = ethnicity
+        missing.loc[i, 'Date'] = dlc
+        missing.loc[i, 'Location'] = mf
+        missing.loc[i, 'Age'] = ma
+        missing.loc[i, 'Current_Age'] = ca
+        missing.loc[i, 'Height'] = height
+        missing.loc[i, 'Weight'] = weight
+        missing.loc[i, 'Hair_Color'] = hc
+        missing.loc[i, 'Head_Hair'] = hh
+        missing.loc[i, 'Body_Hair'] = bh
+        missing.loc[i, 'Left_Eye'] = le
+        missing.loc[i, 'Right_Eye'] = re
+        missing.loc[i, 'Both_Eyes'] = be
+        missing.loc[i, 'Features'] = str(features)
+        missing.loc[i, 'Clothing_Accessories'] = str(ce)
+        missing.loc[i, 'Circumstances'] = circ
+        missing.loc[i, 'Status'] = 'Missing'
+        
+    except:
+        print('MP #' + str(i) + ' unavailable')
+       
+missing.to_csv(download_path + '\\Missing.csv')     
+
+#============================================================================================================================#
+''' Cold Case webscraper '''
+#============================================================================================================================#
+
+
+driver = webdriver.Chrome()
+driver.implicitly_wait(1)
+
+# Create a cold case data frame to populate
+cold_cases = pd.DataFrame()
+
+for l in range(0,10):
+    try:
+        driver.get('https://database.projectcoldcase.org/?page=' + str(l + 1))
+        
+        # Loop through the cases on each page
+        for m in range(1,11):
+            # Name
+            name = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[1]/div[1]/table/tbody/tr[1]/td[2]').text
+    
+            # Age
+            age = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[1]/div[1]/table/tbody/tr[2]/td[2]').text
+            
+            # Gender
+            gender = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[1]/div[1]/table/tbody/tr[3]/td[2]').text
+            
+            # Ethnicity
+            ethnicity = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[1]/div[1]/table/tbody/tr[4]/td[2]').text
+    
+            # Date reported 
+            date = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[1]/div/div[2]').text[15:]
+    
+            # Location
+            location = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[1]/div[3]/table/tbody/tr[2]/td[2]').text
+            
+            # details
+            details = driver.find_element_by_xpath('/html/body/div[2]/div[' + str(m+1) + ']/div/div[2]/div/div[2]/div[2]/div').text
+            if 'This case was gathered through a partnership with The Washington Post.' in details:
+                details = ''
+    
+            print(name)
+            print(age)
+            print(gender)
+            print(ethnicity)
+            print(location)
+            print(date)
+            print(details)
+            
+            # Create a row number variable
+            n = l*10 + m
+            cold_cases.loc[n, 'Name'] = name
+            cold_cases.loc[n, 'Age'] = age
+            cold_cases.loc[n, 'Gender'] = gender
+            cold_cases.loc[n, 'Ethnicity'] = ethnicity
+            cold_cases.loc[n, 'Location'] = location
+            cold_cases.loc[n, 'Date'] = date
+            cold_cases.loc[n, 'Details'] = details
+            cold_cases.loc[n, 'Status'] = 'Cold Case'
+    except:
+        pass
+    
+cold_cases.to_csv(download_path + '\\Missing.csv')  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
